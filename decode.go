@@ -339,7 +339,16 @@ func (md *MetaData) unifyString(data interface{}, rv reflect.Value) error {
 }
 
 func (md *MetaData) unifyFloat64(data interface{}, rv reflect.Value) error {
-	if num, ok := data.(float64); ok {
+	num, ok := data.(float64)
+	if !ok {
+		//自动将整数转换为浮点数
+		var numInt int64
+		numInt, ok = data.(int64)
+		if ok {
+			num = float64(numInt)
+		}
+	}
+	if ok {
 		switch rv.Kind() {
 		case reflect.Float32:
 			fallthrough
