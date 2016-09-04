@@ -238,7 +238,7 @@ func (enc *Encoder) eArrayOfTables(key Key, rv reflect.Value) {
 	//enc.wf("%s  [\n%s]]", enc.indentStr(key), key.String())
 	newKey := key.insert("_")
 	keyDelta := 0
-	enc.wf("%s%s = [", enc.indentStrDelta(key, -1), key[len(key)-1])
+	enc.wf("%s%s : [", enc.indentStrDelta(key, -1), key[len(key)-1])
 	for i := 0; i < rv.Len(); i++ {
 		trv := rv.Index(i)
 		if isNil(trv) {
@@ -341,8 +341,25 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 		for i := 0; i < rt.NumField(); i++ {
 			f := rt.Field(i)
 			// skip unexporded fields
-			if f.PkgPath != "" {
+			if len(f.PkgPath) > 0 {
 				continue
+			}
+			keyName := f.Tag.Get("confl")
+			if keyName == "-" {
+				continue
+			}
+			if keyName == "" {
+				keyName = f.Tag.Get("json")
+				if keyName == "-" {
+					continue
+				}
+			}
+			if len(keyName) > 0 {
+				attrs := strings.SplitN(keyName, `,`, 2)
+				keyName = attrs[0]
+				if keyName == "-" {
+					continue
+				}
 			}
 			frv := rv.Field(i)
 			if f.Anonymous {
@@ -369,7 +386,6 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 				// Don't write anything for nil fields.
 				continue
 			}
-
 			keyName := sft.Tag.Get("confl")
 			if keyName == "-" {
 				continue
@@ -385,6 +401,9 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 			if keyName != sft.Name {
 				attrs := strings.Split(keyName, `,`)
 				keyName = attrs[0]
+				if keyName == "-" {
+					continue
+				}
 				if len(attrs) > 1 {
 					var omitEmpty bool
 					for _, attr := range attrs[1:] {
@@ -503,7 +522,7 @@ func (enc *Encoder) keyEqElement(key Key, val reflect.Value) {
 	}
 	panicIfInvalidKey(key, false)
 	//u.Infof("keyEqElement: %v", key[len(key)-1])
-	enc.wf("%s%s = ", enc.indentStrDelta(key, -1), key[len(key)-1])
+	enc.wf("%s%s : ", enc.indentStrDelta(key, -1), key[len(key)-1])
 	enc.eElement(val)
 	enc.newline()
 }
@@ -600,7 +619,7 @@ func isZero(v reflect.Value) bool {
 	case reflect.Struct:
 		vt := v.Type()
 		for i := v.NumField() - 1; i >= 0; i-- {
-			if len(vt.Field(i).PkgPath) == 0 {
+			if len(vt.Field(i).PkgPath) > 0 {
 				continue // Private field
 			}
 			if !isZero(v.Field(i)) {

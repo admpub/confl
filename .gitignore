@@ -4,3 +4,4 @@ tags
 
 /confl-fuzz.zip
 /fuzz
+/cmd/conflv/*.exe

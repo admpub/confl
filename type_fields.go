@@ -9,6 +9,7 @@ package confl
 import (
 	"reflect"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -92,7 +93,7 @@ func typeFields(t reflect.Type) []field {
 			// Scan f.typ for fields to include.
 			for i := 0; i < f.typ.NumField(); i++ {
 				sf := f.typ.Field(i)
-				if sf.PkgPath != "" { // unexported
+				if len(sf.PkgPath) > 0 { // unexported
 					continue
 				}
 				name := sf.Tag.Get("confl")
@@ -101,6 +102,13 @@ func typeFields(t reflect.Type) []field {
 				}
 				if name == "" {
 					name = sf.Tag.Get("json")
+					if name == "-" {
+						continue
+					}
+				}
+				if len(name) > 0 {
+					attrs := strings.SplitN(name, `,`, 2)
+					name = attrs[0]
 					if name == "-" {
 						continue
 					}

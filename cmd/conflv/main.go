@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -9,7 +10,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/lytics/confl"
+	"github.com/admpub/confl"
 )
 
 var (
@@ -45,6 +46,13 @@ func main() {
 			log.Fatalf("Error in '%s': %s", f, err)
 		}
 		if flagTypes {
+			b, err := json.MarshalIndent(tmp, ``, `  `)
+			if err != nil {
+				log.Println(err)
+			}
+			log.Println(`==============JSON result=================\`)
+			log.Println(string(b))
+			log.Println(`==============JSON result=================/`)
 			printTypes(md)
 		}
 	}
