@@ -382,6 +382,23 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 					keyName = sft.Name
 				}
 			}
+			if keyName != sft.Name {
+				attrs := strings.Split(keyName, `,`)
+				keyName = attrs[0]
+				if len(attrs) > 1 {
+					var omitEmpty bool
+					for _, attr := range attrs[1:] {
+						switch attr {
+						case `omitempty`:
+							omitEmpty = isZero(sf)
+						default:
+						}
+					}
+					if omitEmpty {
+						continue
+					}
+				}
+			}
 			//u.Infof("found key: depth?%v  keyName='%v'\t\tsf=%v", len(key), keyName, sf)
 			enc.encode(key.add(keyName), sf)
 		}
@@ -560,4 +577,37 @@ func isValidKeyName(s string) bool {
 		return false
 	}
 	return true
+}
+
+func isZero(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.String:
+		return len(v.String()) == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	case reflect.Slice:
+		return v.Len() == 0
+	case reflect.Map:
+		return v.Len() == 0
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Struct:
+		vt := v.Type()
+		for i := v.NumField() - 1; i >= 0; i-- {
+			if len(vt.Field(i).PkgPath) == 0 {
+				continue // Private field
+			}
+			if !isZero(v.Field(i)) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
