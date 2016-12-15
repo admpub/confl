@@ -281,24 +281,23 @@ func (md *MetaData) unifyMap(mapping interface{}, rv reflect.Value) error {
 			return err
 		}
 		md.context = md.context[0 : len(md.context)-1]
-		switch rvkey.Kind() {
-		case reflect.String:
-			rvkey.SetString(k)
-		case reflect.Int:
+		keyType := rvkey.Kind()
+		if keyType >= reflect.Int && keyType <= reflect.Uint64 {
 			i, err := strconv.ParseInt(k, 10, 64)
 			if err != nil {
 				return err
 			}
-			rvkey.SetInt(i)
-		case reflect.Uint:
-			i, err := strconv.ParseUint(k, 10, 64)
-			if err != nil {
+			if err := md.unifyInt(i, rvkey); err != nil {
 				return err
 			}
-			rvkey.SetUint(i)
-		default:
-			return e("This key type of map is not supported. (key type: %v, map: %v)",
-				rvkey.Kind(), mapping)
+		} else {
+			switch keyType {
+			case reflect.String:
+				rvkey.SetString(k)
+			default:
+				return e("This key type of map is not supported. (key type: %v, map: %v)",
+					keyType, mapping)
+			}
 		}
 		rv.SetMapIndex(rvkey, rvval)
 	}
