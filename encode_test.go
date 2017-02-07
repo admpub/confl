@@ -12,6 +12,10 @@ import (
 	"github.com/bmizerany/assert"
 )
 
+func init() {
+	KeyEqElement = "="
+}
+
 var _ = u.EMPTY
 
 func TestEncodeRoundTrip(t *testing.T) {
@@ -151,7 +155,7 @@ func TestEncodeMany(t *testing.T) {
 			input: struct{ IntSliceNil, IntSlice0, IntSlice3 []int }{
 				nil, []int{}, []int{1, 2, 3},
 			},
-			wantOutput: "IntSlice0 = []\nIntSlice3 = [1, 2, 3]\n",
+			wantOutput: "IntSliceNil = []\nIntSlice0 = []\nIntSlice3 = [1, 2, 3]\n",
 		},
 		{label: "datetime slices",
 			input: struct{ DatetimeSlice []time.Time }{
@@ -274,9 +278,9 @@ ArrayOfMixedSlices = [[1, 2], ["a", "b"]]
 		},
 		{label: "nested struct and non-struct field",
 			input: struct {
-				Struct struct{ Int int }
 				Bool   bool
-			}{struct{ Int int }{1}, true},
+				Struct struct{ Int int }
+			}{true, struct{ Int int }{1}},
 			wantOutput: "Bool = true\nStruct {\n  Int = 1\n}\n",
 		},
 		{label: "2 nested structs",
@@ -312,14 +316,14 @@ ArrayOfMixedSlices = [[1, 2], ["a", "b"]]
 		},
 		{label: "struct with tags",
 			input: struct {
+				Bool   bool `confl:"_bool"`
 				Struct struct {
 					Int int `json:"_int"`
 				} `confl:"_struct"`
-				Bool bool `confl:"_bool"`
 			}{
-				struct {
+				true, struct {
 					Int int `json:"_int"`
-				}{1}, true,
+				}{1},
 			},
 			wantOutput: "_bool = true\n_struct {\n  _int = 1\n}\n",
 		},
@@ -377,8 +381,8 @@ ArrayOfMixedSlices = [[1, 2], ["a", "b"]]
 			wantError: errArrayNoTable,
 		},
 		{label: "(error) map no string key",
-			input:     map[int]string{1: ""},
-			wantError: errNonString,
+			input:      map[int]string{1: ""},
+			wantOutput: "1 = \"\"\n",
 		},
 		{label: "(error) anonymous non-struct",
 			input:     struct{ NonStruct }{5},
