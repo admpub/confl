@@ -417,11 +417,10 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 			}
 			frv := rv.Field(i)
 			if f.Anonymous {
-				// skip nil field
-				if frv.IsNil() {
+				frv := eindirect(frv)
+				if !frv.IsValid() {
 					continue
 				}
-				frv := eindirect(frv)
 				t := frv.Type()
 				if t.Kind() != reflect.Struct {
 					encPanic(errAnonNonStruct)
