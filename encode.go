@@ -418,6 +418,7 @@ func (enc *Encoder) eStruct(key Key, rv reflect.Value) {
 			frv := rv.Field(i)
 			if f.Anonymous {
 				frv := eindirect(frv)
+				// skip nil field
 				if !frv.IsValid() {
 					continue
 				}
