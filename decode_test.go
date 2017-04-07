@@ -361,6 +361,24 @@ type sphere struct {
 	Radius float64
 }
 
+func TestDecodeSlashes(t *testing.T) {
+	s1 := map[string]string{}
+	if _, err := Decode(`center = "c:\path\to"`, &s1); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `c:\path\to`, s1["center"])
+	if _, err := Decode(`center = "json:\"`, &s1); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `json:\`, s1["center"])
+	/*
+		if _, err := Decode(`center = "json:\\"eee\\""`, &s1); err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, `json:"eee"`, s1["center"])
+	*/
+}
+
 func TestDecodeSimpleArray(t *testing.T) {
 	var s1 sphere
 	if _, err := Decode(`center = [0.0, 1.5, 0.0]`, &s1); err != nil {

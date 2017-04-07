@@ -398,6 +398,12 @@ ArrayOfMixedSlices = [[1, 2], ["a", "b"]]
 			},
 			wantError: errAnything,
 		},
+		{label: "(error) slash",
+			input: map[string]interface{}{
+				"slash": `c:\path\to`,
+			},
+			wantOutput: `slash = "c:\path\to"` + "\n",
+		},
 	}
 	for idx, test := range tests {
 		u.Debugf("starting test:  #%d %v", idx, test.label)
