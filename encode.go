@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -234,7 +235,7 @@ func (enc *Encoder) eArrayOfTables(key Key, rv reflect.Value) {
 	//enc.newline()
 	newKey := key.insert("_")
 	keyDelta := 0
-	enc.wf("%s%s "+enc.KeyEqElement+" [", enc.indentStrDelta(key, -1), key[len(key)-1])
+	enc.wf("%s%s "+enc.KeyEqElement+" [", enc.indentStrDelta(key, -1), SafeKey(key[len(key)-1]))
 	for i := 0; i < rv.Len(); i++ {
 		trv := rv.Index(i)
 		if isNil(trv) {
@@ -538,12 +539,21 @@ func (enc *Encoder) newline() {
 	}
 }
 
+var reNeedQuoted = regexp.MustCompile(`[\s:=]`)
+
+func SafeKey(key string) string {
+	if reNeedQuoted.MatchString(key) {
+		key = `"` + key + `"`
+	}
+	return key
+}
+
 func (enc *Encoder) keyEqElement(key Key, val reflect.Value) {
 	if len(key) == 0 {
 		encPanic(errNoKey)
 	}
 	panicIfInvalidKey(key, false)
-	enc.wf("%s%s "+enc.KeyEqElement+" ", enc.indentStrDelta(key, -1), key[len(key)-1])
+	enc.wf("%s%s "+enc.KeyEqElement+" ", enc.indentStrDelta(key, -1), SafeKey(key[len(key)-1]))
 	enc.eElement(val)
 	enc.newline()
 }
