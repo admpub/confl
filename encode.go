@@ -25,14 +25,22 @@ var (
 	errArrayNoTable           = errors.New("array element can't contain a table")
 	errNoKey                  = errors.New("top-level values must be a Go map or struct")
 	errAnything               = errors.New("") // used in testing
+	quotedReplacer            = strings.NewReplacer(
+		"\t", `\t`,
+		"\n", `\n`,
+		"\r", `\r`,
+		`"`, `\"`,
+	)
+	reNeedQuoted = regexp.MustCompile(`[\s:=]`)
 )
 
-var quotedReplacer = strings.NewReplacer(
-	"\t", `\t`,
-	"\n", `\n`,
-	"\r", `\r`,
-	`"`, `\"`,
-)
+// SafeKey key
+func SafeKey(key string) string {
+	if reNeedQuoted.MatchString(key) {
+		key = `"` + key + `"`
+	}
+	return key
+}
 
 // Marshal a go struct into bytes
 func Marshal(v interface{}) ([]byte, error) {
@@ -537,15 +545,6 @@ func (enc *Encoder) newline() {
 	if enc.hasWritten {
 		enc.wf("\n")
 	}
-}
-
-var reNeedQuoted = regexp.MustCompile(`[\s:=]`)
-
-func SafeKey(key string) string {
-	if reNeedQuoted.MatchString(key) {
-		key = `"` + key + `"`
-	}
-	return key
 }
 
 func (enc *Encoder) keyEqElement(key Key, val reflect.Value) {
