@@ -371,12 +371,6 @@ func TestDecodeSlashes(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, `json:\`, s1["center"])
-	/*
-		if _, err := Decode(`center = "json:\\"eee\\""`, &s1); err != nil {
-			t.Fatal(err)
-		}
-		assert.Equal(t, `json:"eee"`, s1["center"])
-	*/
 }
 
 func TestDecodeSimpleArray(t *testing.T) {
