@@ -28,8 +28,6 @@ var (
 	// A lax identity char set rule, we use as default
 	// if you want the one above, swap them out
 	//IdentityChars = "_./- "
-
-	LexerVersion = 2
 )
 
 type itemType int
@@ -82,7 +80,6 @@ type lexer struct {
 	input string
 	start int
 	pos   int
-	width int
 	line  int
 	state stateFn
 	items chan item
@@ -164,31 +161,6 @@ func (lx *lexer) emitTrim(typ itemType) {
 }
 
 func (lx *lexer) next() (r rune) {
-	if LexerVersion == 2 {
-		return lx.next2()
-	}
-	// stackBuf := make([]byte, 4096)
-	// stackBufLen := runtime.Stack(stackBuf, false)
-	// stackTraceStr := string(stackBuf[0:stackBufLen])
-
-	if lx.pos >= len(lx.input) {
-		lx.width = 0
-		// if lx.circuitBreaker > 0 {
-		// 	panic("hm")
-		// }
-		// lx.circuitBreaker++
-		return eof
-	}
-
-	if lx.input[lx.pos] == '\n' {
-		lx.line++
-	}
-	r, lx.width = utf8.DecodeRuneInString(lx.input[lx.pos:])
-	lx.pos += lx.width
-	return r
-}
-
-func (lx *lexer) next2() (r rune) {
 	if lx.atEOF {
 		panic("next called after EOF")
 	}
@@ -218,21 +190,6 @@ func (lx *lexer) ignore() {
 
 // backup steps back one rune. Can be called only once per call of next.
 func (lx *lexer) backup() {
-	if LexerVersion == 2 {
-		lx.backup2()
-		return
-	}
-	// This backup has a problem, if eof has already been hit
-	// lx.width will be = 0
-	// possibly just manually set to 1?
-	lx.pos -= lx.width
-	if lx.pos < len(lx.input) && lx.input[lx.pos] == '\n' {
-		lx.line--
-	}
-}
-
-// backup steps back one rune. Can be called only once per call of next.
-func (lx *lexer) backup2() {
 	if lx.atEOF {
 		lx.atEOF = false
 		return
@@ -913,11 +870,7 @@ func lexBlock(lx *lexer) stateFn {
 		switch r = lx.next(); r {
 		case '\n', eof:
 			if r == eof {
-				if LexerVersion == 2 {
-					lx.prevWidths[0] = 1
-				} else {
-					lx.width = 1
-				}
+				lx.prevWidths[0] = 1
 			}
 			lx.backup() // unconsume the \n, or eof
 			r = lx.peek()
@@ -956,10 +909,7 @@ func lexStringEscape(lx *lexer) stateFn {
 	case '"':
 		fallthrough
 	case backslash:
-		if LexerVersion == 2 {
-			return lx.pop()
-		}
-		return lexString
+		return lx.pop()
 	case 'u':
 		return lexShortUnicodeEscape
 	case 'U':
@@ -1044,19 +994,6 @@ func lexNumberOrDate(lx *lexer) stateFn {
 	case '.', 'e', 'E':
 		return lexFloat
 	}
-	/*
-		switch {
-		case r == '-':
-			if lx.pos-lx.start != 5 {
-				return lx.errorf("All ISO8601 dates must be in full Zulu form.")
-			}
-			return lexDateAfterYear
-		case isDigit(r):
-			return lexNumberOrDate
-		case r == '.':
-			return lexFloatStart
-		}
-	*/
 	lx.backup()
 	lx.emit(itemInteger)
 	return lx.pop()
