@@ -40,8 +40,6 @@ const (
 	itemText
 	itemString
 	itemBool
-	itemMultilineString
-	itemRawMultilineString
 	itemInteger
 	itemFloat
 	itemDatetime
@@ -717,8 +715,8 @@ func lexQuotedString(lx *lexer) stateFn {
 // internal contents.
 func lexDubQuotedString(lx *lexer) stateFn {
 	r := lx.next()
-	switch {
-	case r == dqStringEnd:
+	switch r {
+	case dqStringEnd:
 		lx.backup()
 		lx.emit(itemString)
 		lx.next()
@@ -794,7 +792,7 @@ func lexMultilineString(lx *lexer) stateFn {
 				lx.backup()
 				lx.backup()
 				lx.backup()
-				lx.emit(itemMultilineString)
+				lx.emit(itemString)
 				lx.next()
 				lx.next()
 				lx.next()
@@ -820,7 +818,7 @@ func lexMultilineRawString(lx *lexer) stateFn {
 				lx.backup()
 				lx.backup()
 				lx.backup()
-				lx.emit(itemRawMultilineString)
+				lx.emit(itemString)
 				lx.next()
 				lx.next()
 				lx.next()
@@ -1181,7 +1179,7 @@ func (itype itemType) String() string {
 		return "EOF"
 	case itemText:
 		return "Text"
-	case itemString, itemMultilineString, itemRawMultilineString:
+	case itemString:
 		return "String"
 	case itemBool:
 		return "Bool"

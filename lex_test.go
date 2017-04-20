@@ -63,6 +63,28 @@ func TestLexSimpleKeyStringValues(t *testing.T) {
 	// NL
 	lx = lex("foo='bar'\r\n")
 	expect(t, lx, expectedItems)
+
+	// '''
+	expectedItems = []item{
+		{itemKey, "foo", 1},
+		{itemString, `json:"-"`, 1},
+		{itemEOF, "", 1},
+	}
+	lx = lex(`foo='''json:"-"'''`)
+	expect(t, lx, expectedItems)
+
+	// ''' Multi line
+	expectedItems = []item{
+		{itemKey, "foo", 1},
+		{itemString, `json:"-"
+json:"-"
+json:"-"`, 3},
+		{itemEOF, "", 1},
+	}
+	lx = lex(`foo='''json:"-"
+json:"-"
+json:"-"'''`)
+	expect(t, lx, expectedItems)
 }
 
 func TestLexSimpleKeyIntegerValues(t *testing.T) {
