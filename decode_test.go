@@ -398,11 +398,6 @@ webx.top
 		t.Fatal(err)
 	}
 	assert.Equal(t, `webx.top`, s1["center"])
-
-	if _, err := Decode(`"c\"enter" = "a"`, &s1); err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `a`, s1["c\"enter"])
 }
 
 func TestDecodeSimpleArray(t *testing.T) {
