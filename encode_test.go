@@ -481,6 +481,28 @@ func TestEncodeArrayHashWithNormalHashOrder(t *testing.T) {
 	encodeExpected(t, "array hash with normal hash order", val, expected, nil)
 }
 
+func TestEncodeBlock(t *testing.T) {
+	type Alpha struct {
+		V string
+	}
+	type Beta struct {
+		V string
+	}
+	type Conf struct {
+		V string
+		A Alpha
+		B []Beta
+	}
+
+	val := Conf{
+		V: `eeeeeee"ddddddddd`,
+		A: Alpha{"eeeeeee\r\nddddddddd"},
+		B: []Beta{{"eeeeeee\r\nddddddddd\""}, {"eeeeeee\r\ndddd'''dd\"\"\"ddd\""}},
+	}
+	expected := "V = 'eeeeeee\"ddddddddd'\nA {\n  V = \"\"\"eeeeeee\r\nddddddddd\"\"\"\n}\nB = [\n  {\n    V = '''eeeeeee\r\nddddddddd\"'''\n  },\n  {\n    V = (\n\teeeeeee\r\n\tdddd'''dd\"\"\"ddd\"\n)\n\n  }\n]\n"
+	encodeExpected(t, "array hash with normal hash order", val, expected, nil)
+}
+
 func encodeExpected(
 	t *testing.T, label string, val interface{}, wantStr string, wantErr error,
 ) {
@@ -510,6 +532,7 @@ func encodeExpected(
 				break
 			}
 		}
+		fmt.Println(got)
 		t.Fatalf("%s: want\n-----\n%q\n-----\nbut got\n-----\n%q\n-----\n", label, wantStr, got)
 	}
 }

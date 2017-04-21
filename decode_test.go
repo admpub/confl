@@ -386,10 +386,23 @@ func TestDecodeSlashes(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, `c:\path\to`, s1["center"])
+
 	if _, err := Decode(`center = '''json:"'''`, &s1); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, `json:"`, s1["center"])
+
+	if _, err := Decode(`center = (
+webx.top
+)`, &s1); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `webx.top`, s1["center"])
+
+	if _, err := Decode(`"c\"enter" = "a"`, &s1); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `a`, s1["c\"enter"])
 }
 
 func TestDecodeSimpleArray(t *testing.T) {

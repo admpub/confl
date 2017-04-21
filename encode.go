@@ -37,7 +37,13 @@ var (
 // SafeKey key
 func SafeKey(key string) string {
 	if reNeedQuoted.MatchString(key) {
-		key = `"` + key + `"`
+		if !strings.Contains(key, `"`) {
+			key = `"` + key + `"`
+		} else if !strings.Contains(key, `'`) {
+			key = `'` + key + `'`
+		} else {
+			key = fmt.Sprintf(`"%q"`, key)
+		}
 	}
 	return key
 }
@@ -219,7 +225,40 @@ func floatAddDecimal(fstr string) string {
 }
 
 func (enc *Encoder) writeQuoted(s string) {
-	enc.wf("\"%s\"", quotedReplacer.Replace(s))
+	switch {
+	case strings.Contains(s, "\n"):
+		switch {
+		case !strings.HasPrefix(s, `"`) && !strings.HasSuffix(s, `"`) && !strings.Contains(s, `"""`):
+			enc.wf(`"""%s"""`, s)
+		case !strings.HasPrefix(s, `'`) && !strings.HasSuffix(s, `'`) && !strings.Contains(s, `'''`):
+			enc.wf(`'''%s'''`, s)
+		default:
+			enc.wf("(")
+			enc.newline()
+			for idx, row := range strings.Split(s, "\n") {
+				if idx > 0 {
+					enc.wf("\n")
+				}
+				enc.wf("\t" + row)
+			}
+			enc.newline()
+			enc.wf(")")
+			enc.newline()
+		}
+	case strings.Contains(s, `"`):
+		switch {
+		case !strings.Contains(s, `'`):
+			enc.wf(`'%s'`, s)
+		case !strings.HasPrefix(s, `"`) && !strings.HasSuffix(s, `"`) && !strings.Contains(s, `"""`):
+			enc.wf(`"""%s"""`, s)
+		case !strings.HasPrefix(s, `'`) && !strings.HasSuffix(s, `'`) && !strings.Contains(s, `'''`):
+			enc.wf(`'''%s'''`, s)
+		default:
+			enc.wf(`"%s"`, quotedReplacer.Replace(s))
+		}
+	default:
+		enc.wf(`"%s"`, quotedReplacer.Replace(s))
+	}
 }
 
 func (enc *Encoder) eArrayOrSliceElement(rv reflect.Value) {
