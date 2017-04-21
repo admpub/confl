@@ -55,8 +55,23 @@ games [
         name "settlers of catan"
         // a comment
     }
+	{
+		name (
+			block string
+			block string
+)
+	}
+	{
+		name """block2 string
+block2 string"""
+	}
 ]
 
+block (
+	111111
+	222222
+	333333
+)
 `
 
 	type cats struct {
@@ -78,7 +93,8 @@ games [
 		Andrew  string
 		Kait    string
 		My      map[string]cats
-		Games   []*game
+		Games   []game
+		Block   string
 	}
 
 	var simple simpleType
@@ -106,10 +122,13 @@ games [
 		My: map[string]cats{
 			"Cats": cats{Plato: "cat 1", Cauchy: "cat 2"},
 		},
-		Games: []*game{
-			&game{"game of thrones", "got"},
-			&game{Name: "settlers of catan"},
+		Games: []game{
+			game{"game of thrones", "got"},
+			game{Name: "settlers of catan"},
+			game{Name: "block string\nblock string"},
+			game{Name: "block2 string\nblock2 string"},
 		},
+		Block: "111111\n222222\n333333",
 	}
 	assert.Tf(t, simple.AgePtr == nil, "must have nil ptr")
 	if !reflect.DeepEqual(simple, answer) {

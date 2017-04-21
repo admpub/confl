@@ -192,7 +192,7 @@ func (lx *lexer) backup() {
 		lx.atEOF = false
 		return
 	}
-	if lx.nprev < 1 {
+	if lx.nprev < 0 {
 		panic("backed up too far")
 	}
 	w := lx.prevWidths[0]
@@ -454,7 +454,11 @@ func lexValue(lx *lexer) stateFn {
 	case '-':
 		return lexNumberStart
 	case blockStart:
-		lx.next()   // ignore the /n after {
+		r = lx.next() // ignore the \n after {
+		if r == '\r' {
+			lx.ignore()
+			lx.next()
+		}
 		lx.ignore() // Ignore the (
 		return lexBlock
 	case '.': // special error case, be kind to users
@@ -848,7 +852,6 @@ func lexMultilineStringEscape(lx *lexer) stateFn {
 // processing until it finds a ')' on a new line by itself.
 func lexBlock(lx *lexer) stateFn {
 	r := lx.next()
-
 	switch {
 	case r == blockEnd:
 
@@ -857,16 +860,15 @@ func lexBlock(lx *lexer) stateFn {
 
 		// Looking for a ')' character on a line by itself, if the previous
 		// character isn't a new line, then break so we keep processing the block.
-		if lx.next() != '\n' {
+		if !isNL(lx.next()) {
 			lx.next() // if inline ( this will consume it
 			break
 		}
 		lx.next()
-
 		// Make sure the next character is a new line or an eof. We want a ')' on a
 		// bare line by itself.
 		switch r = lx.next(); r {
-		case '\n', eof:
+		case '\r', '\n', eof:
 			if r == eof {
 				lx.prevWidths[0] = 1
 			}
@@ -876,6 +878,10 @@ func lexBlock(lx *lexer) stateFn {
 				lx.backup() // unconsume the )
 			}
 			lx.backup() // unconsume the \n
+			lx.backup()
+			if lx.next() == '\r' {
+				lx.backup()
+			}
 			lx.emit(itemString)
 			lx.next() // consume the previous line \n
 			lx.next() // consume the )

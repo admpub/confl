@@ -628,3 +628,25 @@ func TestLexBlockStringMultiLine(t *testing.T) {
 	lx := lex(mlblockexample)
 	expect(t, lx, expectedItems)
 }
+
+var mlblockCRLFExample = "numbers (\r\n20060102\r\n)\r\n"
+
+func TestLexBlockStringCRLF(t *testing.T) {
+	expectedItems := []item{
+		{itemKey, "numbers", 1},
+		{itemString, "20060102", 2},
+	}
+	lx := lex(mlblockCRLFExample)
+	expect(t, lx, expectedItems)
+}
+
+var mlblockLFExample = "numbers (\n20060102\n)\n"
+
+func TestLexBlockStringLF(t *testing.T) {
+	expectedItems := []item{
+		{itemKey, "numbers", 1},
+		{itemString, "20060102", 2},
+	}
+	lx := lex(mlblockCRLFExample)
+	expect(t, lx, expectedItems)
+}
