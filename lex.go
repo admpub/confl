@@ -257,7 +257,6 @@ func lexTop(lx *lexer) stateFn {
 	if r != eof && (isWhitespace(r) || isNL(r)) {
 		return lexSkip(lx, lexTop)
 	}
-
 	switch r {
 	case commentHashStart:
 		lx.push(lexTop)
@@ -281,14 +280,14 @@ func lexTop(lx *lexer) stateFn {
 	// At this point, the only valid item can be a key, so we back up
 	// and let the key lexer do the rest.
 	lx.backup()
-	lx.push(lexTopValueEnd)
+	lx.push(lexTopEnd)
 	return lexKeyStart
 }
 
-// lexTopValueEnd is entered whenever a top-level value has been consumed.
+// lexTopEnd is entered whenever a top-level value has been consumed.
 // It must see only whitespace, and will turn back to lexTop upon a new line.
 // If it sees EOF, it will quit the lexer successfully.
-func lexTopValueEnd(lx *lexer) stateFn {
+func lexTopEnd(lx *lexer) stateFn {
 	r := lx.next()
 	switch {
 	case r == commentHashStart:
@@ -304,17 +303,15 @@ func lexTopValueEnd(lx *lexer) stateFn {
 		lx.backup()
 		fallthrough
 	case isWhitespace(r):
-		return lexTopValueEnd
+		return lexTopEnd
 	case isNL(r) || r == optValTerm:
 		lx.ignore()
 		return lexTop
-		// case r == ')':
-		// 	lx.ignore()
-		// 	return lexTop
 	case r == eof:
 		lx.emit(itemEOF)
 		return nil
 	}
+
 	return lx.errorf("Expected a top-level value to end with a new line, "+
 		"comment or EOF, but got '%v' instead.\nSource:-------------\n%v\n------------EndSource", r, lx.input)
 }
