@@ -10,7 +10,7 @@ import (
 	"time"
 
 	u "github.com/araddon/gou"
-	"github.com/bmizerany/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -75,8 +75,8 @@ block (
 `
 
 	type cats struct {
-		Plato  string
-		Cauchy string
+		PlatoAlias       string `json:"plato,omitempty"`
+		CauchyConflAlias string `confl:"cauchy"`
 	}
 	type game struct {
 		Name string
@@ -99,7 +99,7 @@ block (
 
 	var simple simpleType
 	_, err := Decode(simpleConfigString, &simple)
-	assert.Tf(t, err == nil, "err nil?%v", err)
+	assert.True(t, err == nil, "err nil?%v", err)
 
 	now, err := time.Parse("2006-01-02T15:04:05", "1987-07-05T05:45:00")
 	if err != nil {
@@ -120,7 +120,7 @@ block (
 			{"pink", "brown"},
 		},
 		My: map[string]cats{
-			"Cats": cats{Plato: "cat 1", Cauchy: "cat 2"},
+			"Cats": cats{PlatoAlias: "cat 1", CauchyConflAlias: "cat 2"},
 		},
 		Games: []game{
 			game{"game of thrones", "got"},
@@ -130,7 +130,7 @@ block (
 		},
 		Block: "111111\n222222\n333333",
 	}
-	assert.Tf(t, simple.AgePtr == nil, "must have nil ptr")
+	assert.True(t, simple.AgePtr == nil, "must have nil ptr")
 	if !reflect.DeepEqual(simple, answer) {
 		t.Fatalf("Expected\n-----\n%#v\n-----\nbut got\n-----\n%#v\n",
 			answer, simple)
@@ -140,9 +140,9 @@ block (
 	var simpleDec simpleType
 	decoder := NewDecoder(strings.NewReader(simpleConfigString))
 	err = decoder.Decode(&simpleDec)
-	assert.Tf(t, err == nil, "err nil?%v", err)
+	assert.True(t, err == nil, "err nil?%v", err)
 
-	assert.Tf(t, simpleDec.AgePtr == nil, "must have nil ptr")
+	assert.True(t, simpleDec.AgePtr == nil, "must have nil ptr")
 	if !reflect.DeepEqual(simpleDec, answer) {
 		t.Fatalf("Expected\n-----\n%#v\n-----\nbut got\n-----\n%#v\n",
 			answer, simpleDec)
@@ -151,9 +151,9 @@ block (
 	// Now Try decoding using Unmarshal
 	var simple2 simpleType
 	err = Unmarshal([]byte(simpleConfigString), &simple2)
-	assert.Tf(t, err == nil, "err nil?%v", err)
+	assert.True(t, err == nil, "err nil?%v", err)
 
-	assert.Tf(t, simple2.AgePtr == nil, "must have nil ptr")
+	assert.True(t, simple2.AgePtr == nil, "must have nil ptr")
 	if !reflect.DeepEqual(simple2, answer) {
 		t.Fatalf("Expected\n-----\n%#v\n-----\nbut got\n-----\n%#v\n",
 			answer, simple2)
@@ -528,7 +528,7 @@ func ExampleDecode() {
 # Some comments.
 alpha {
 	ip = "10.0.0.1"
-
+	// config section
 	config {
 		Ports = [ 8001, 8002 ]
 		Location = "Toronto"

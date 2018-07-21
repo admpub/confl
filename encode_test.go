@@ -9,7 +9,7 @@ import (
 	"time"
 
 	u "github.com/araddon/gou"
-	"github.com/bmizerany/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -66,8 +66,8 @@ func TestEncodeRoundTrip(t *testing.T) {
 
 	// now try with Marshal
 	marshalBytes, err := Marshal(&inputs)
-	assert.T(t, err == nil)
-	assert.Tf(t, bytes.Equal(marshalBytes, firstBuffer.Bytes()), "equal?")
+	assert.Equal(t, nil, err)
+	assert.True(t, bytes.Equal(marshalBytes, firstBuffer.Bytes()), "equal?")
 }
 
 func TestEncodeMany(t *testing.T) {
