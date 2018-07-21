@@ -209,6 +209,15 @@ func (lx *lexer) peek() rune {
 	return r
 }
 
+// accept consumes the next rune if it's equal to `valid`.
+func (lx *lexer) accept(valid rune) bool {
+	if lx.next() == valid {
+		return true
+	}
+	lx.backup()
+	return false
+}
+
 // skip ignores all input that matches the given predicate.
 func (lx *lexer) skip(pred func(rune) bool) {
 	for {
