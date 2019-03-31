@@ -309,8 +309,7 @@ func lexTopEnd(lx *lexer) stateFn {
 		return nil
 	}
 
-	return lx.errorf("Expected a top-level value to end with a new line, "+
-		"comment or EOF, but got '%v' instead.\nSource:-------------\n%v\n------------EndSource", r, lx.input)
+	return lx.errorf("Source:-------------\n%v 👈 <------- ❌ Expected a top-level value to end with a new line, comment or EOF, but got '%v' instead.\n", lx.input[0:lx.start]+`[`+lx.input[lx.start:lx.pos]+`]`, r)
 }
 
 // lexKeyStart consumes a key name up until the first non-whitespace character.
