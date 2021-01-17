@@ -1,7 +1,7 @@
 package confl
 
 import (
-	"flag"
+	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
@@ -15,11 +15,6 @@ import (
 
 func init() {
 	log.SetFlags(0)
-	flag.Parse()
-	if testing.Verbose() {
-		u.SetupLogging("debug")
-		u.SetColorOutput()
-	}
 }
 
 func TestDecodeSimple(t *testing.T) {
@@ -422,6 +417,34 @@ func TestDecodeLargeIntoSmallInt(t *testing.T) {
 	if _, err := Decode(`value = 500`, &tab); err == nil {
 		t.Fatal("Expected integer out-of-bounds error.")
 	}
+}
+
+func TestDecodeMap(t *testing.T) {
+	type table struct {
+		H map[string]interface{}
+	}
+	type Table2 struct {
+		Name string
+	}
+	var tab table
+	tab.H = map[string]interface{}{
+		`table`: &Table2{Name: `0`},
+	}
+	str := `H : {
+	table : {
+		Name : "1"
+	}
+}`
+	if _, err := Decode(str, &tab); err != nil {
+		t.Fatal(err)
+	}
+	expected, _ := json.Marshal(table{
+		H: map[string]interface{}{
+			`table`: &Table2{Name: `1`},
+		},
+	})
+	actual, _ := json.Marshal(tab)
+	assert.Equal(t, string(expected), string(actual))
 }
 
 func TestDecodeSizedInts(t *testing.T) {
