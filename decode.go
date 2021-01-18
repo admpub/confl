@@ -303,7 +303,7 @@ func (md *MetaData) unifyMap(mapping interface{}, rv reflect.Value) error {
 			if originalValue.IsValid() && originalValue.Kind() == reflect.Interface {
 				originalValue = reflect.ValueOf(originalValue.Interface())
 				if originalValue.Kind() == reflect.Ptr {
-					map2struct.Scan(originalValue.Interface(), mv)
+					map2struct.Scan(originalValue.Interface(), mv, `confl`, `json`)
 					rv.SetMapIndex(rvkey, originalValue)
 					continue
 				}

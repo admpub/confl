@@ -1,5 +1,5 @@
-github.com/admpub/map2struct v0.0.0-20170301071106-6be1b201efe1 h1:fivYYVCvjM1HTWH7M8wEi9GvNKO7ckjttnAUNAqdRtw=
-github.com/admpub/map2struct v0.0.0-20170301071106-6be1b201efe1/go.mod h1:ervwWz25v8EbX+eSQuEQTJ61QwsIk/D/Uv1f2IFhAzg=
+github.com/admpub/map2struct v0.0.3 h1:KrKCFZgiiV54dEw0jpvCQn/HlUEI7rFHpEBE8MR7M0w=
+github.com/admpub/map2struct v0.0.3/go.mod h1:SSikwpb+tMPLaqu59gh/edGWHKEbgcOIxiWWwJVUL+w=
 github.com/araddon/gou v0.0.0-20190110011759-c797efecbb61 h1:Xz25cuW4REGC5W5UtpMU3QItMIImag615HiQcRbxqKQ=
 github.com/araddon/gou v0.0.0-20190110011759-c797efecbb61/go.mod h1:ikc1XA58M+Rx7SEbf0bLJCfBkwayZ8T5jBo5FXK8Uz8=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
