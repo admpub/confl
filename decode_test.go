@@ -444,6 +444,7 @@ func TestDecodeMap(t *testing.T) {
 		},
 	})
 	actual, _ := json.Marshal(tab)
+	println(string(actual))
 	assert.Equal(t, string(expected), string(actual))
 }
 
